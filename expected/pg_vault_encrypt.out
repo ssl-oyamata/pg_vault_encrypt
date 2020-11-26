@@ -1,0 +1,76 @@
+-- SELECT encrypt('宇宙人になりたい');
+SELECT decrypt(encrypt('宇宙人になりたい'));
+     decrypt      
+------------------
+ 宇宙人になりたい
+(1 行)
+
+-- SELECT encrypt('I want to be an alien');
+SELECT decrypt(encrypt('I want to be an alien'));
+        decrypt        
+-----------------------
+ I want to be an alien
+(1 行)
+
+create table test(id int , data cipher);
+CREATE TABLE
+insert into test values(1, 'jp');
+INSERT 0 1
+insert into test values(2, '宇宙人になりたい');
+INSERT 0 1
+insert into test values(3, 'I want to be an alien');
+INSERT 0 1
+SELECT * FROM test;
+ id |         data          
+----+-----------------------
+  1 | jp
+  2 | 宇宙人になりたい
+  3 | I want to be an alien
+(3 行)
+
+SELECT * FROM test where data = '宇宙人になりたい';
+ id |       data       
+----+------------------
+  2 | 宇宙人になりたい
+(1 行)
+
+SELECT * FROM test where data LIKE '宇宙人%';
+ id |       data       
+----+------------------
+  2 | 宇宙人になりたい
+(1 行)
+
+SELECT * FROM test where data LIKE '%になりたい';
+ id |       data       
+----+------------------
+  2 | 宇宙人になりたい
+(1 行)
+
+SELECT * FROM test where data LIKE '%宇宙人%';
+ id |       data       
+----+------------------
+  2 | 宇宙人になりたい
+(1 行)
+
+SELECT * FROM test where data LIKE '%宇宙まん%';
+ id | data 
+----+------
+(0 行)
+
+-- SET pg_vault_encrypt.vault_token = "not key";
+-- SELECT * FROM test;
+-- SET pg_vault_encrypt.vault_token TO DEFAULT ;
+--
+-- SET pg_vault_encrypt.vault_addr = "http://192.168.0.40:8080";
+-- SELECT * FROM test;
+-- SET pg_vault_encrypt.vault_addr TO DEFAULT ;
+--
+-- SET pg_vault_encrypt.vault_transit_engine_path = "dummy";
+-- SELECT * FROM test;
+-- SET pg_vault_encrypt.vault_transit_engine_path TO DEFAULT ;
+--
+-- SET pg_vault_encrypt.vault_transit_key_name = "dummy";
+-- SELECT * FROM test;
+-- SET pg_vault_encrypt.vault_transit_key_name TO DEFAULT ;
+DROP TABLE test;
+DROP TABLE
