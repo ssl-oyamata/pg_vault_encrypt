@@ -68,7 +68,11 @@ SET
  id |       data
 ----+------------------
   2 | 宇宙人になりたい
+```
 
+```
+$ psql
+=# SET pg_vault_encrypt.vault_token = 'dummy';
 =# SELECT * FROM test where data = '宇宙人になりたい';
 ERROR:  Cannot decrypt data (vault:v1:6NefQnYqaE2Ztze4TCB8iCk4ypodiLFDrJ7Q7kpy): Error making API request.
 
