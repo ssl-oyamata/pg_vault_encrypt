@@ -12,13 +12,15 @@ SELECT decrypt(encrypt('I want to be an alien'));
  I want to be an alien
 (1 行)
 
-create table test(id int , data cipher);
+CREATE TABLE test(id int , data cipher);
 CREATE TABLE
-insert into test values(1, 'jp');
+INSERT INTO test values(1, 'jp');
 INSERT 0 1
-insert into test values(2, '宇宙人になりたい');
+INSERT INTO test values(2, '宇宙人になりたい');
 INSERT 0 1
-insert into test values(3, 'I want to be an alien');
+INSERT INTO test values(3, 'I want to be an alien');
+INSERT 0 1
+INSERT INTO test values(4, 'I want to be a alien2'::text);
 INSERT 0 1
 SELECT * FROM test;
  id |         data          
@@ -26,7 +28,8 @@ SELECT * FROM test;
   1 | jp
   2 | 宇宙人になりたい
   3 | I want to be an alien
-(3 行)
+  4 | I want to be a alien2
+(4 行)
 
 SELECT * FROM test where data = '宇宙人になりたい';
  id |       data       

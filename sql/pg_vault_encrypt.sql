@@ -4,10 +4,11 @@ SELECT decrypt(encrypt('宇宙人になりたい'));
 -- SELECT encrypt('I want to be an alien');
 SELECT decrypt(encrypt('I want to be an alien'));
 
-create table test(id int , data cipher);
-insert into test values(1, 'jp');
-insert into test values(2, '宇宙人になりたい');
-insert into test values(3, 'I want to be an alien');
+CREATE TABLE test(id int , data cipher);
+INSERT INTO test values(1, 'jp');
+INSERT INTO test values(2, '宇宙人になりたい');
+INSERT INTO test values(3, 'I want to be an alien');
+INSERT INTO test values(4, 'I want to be a alien2'::text);
 
 SELECT * FROM test;
 

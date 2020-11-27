@@ -1,18 +1,18 @@
-create or replace function encrypt(cstring)
-  returns cstring as :MOD,'encrypt'
-  LANGUAGE C STRICT;
+CREATE or REPLACE FUNCTION encrypt(cstring)
+RETURNS cstring AS :MOD,'encrypt'
+LANGUAGE C STRICT;
 
-create or replace function decrypt(cstring)
-returns cstring as :MOD,'decrypt'
+CREATE or REPLACE FUNCTION decrypt(cstring)
+RETURNS cstring AS :MOD,'decrypt'
 LANGUAGE C STRICT;
 
 -- VARIABLE TYPE
-create or replace function cipherin(cstring)
-  returns cipher as :MOD,'encryptin'
-  LANGUAGE C STABLE;
+CREATE or REPLACE FUNCTION cipherin(cstring)
+RETURNS cipher AS :MOD,'encryptin'
+LANGUAGE C STABLE;
 
-create or replace function cipherout(cipher)
-returns cstring as :MOD,'decryptout'
+CREATE or REPLACE FUNCTION cipherout(cipher)
+RETURNS cstring AS :MOD,'decryptout'
 LANGUAGE C STABLE;
 
 CREATE TYPE cipher(
@@ -42,6 +42,12 @@ internallength = VARIABLE
 CREATE FUNCTION cipher_to_text(cipher) RETURNS text AS
   'SELECT textin(cipherout($1))' LANGUAGE sql IMMUTABLE STRICT;
 
--- Implicit cast definition
+CREATE FUNCTION text_to_cipher(text) RETURNS cipher AS
+  'SELECT cipherin(textout($1))' LANGUAGE sql IMMUTABLE STRICT;
+
+-- IMPLICIT cast definition
 CREATE CAST (cipher AS text)
   WITH FUNCTION cipher_to_text(cipher) AS IMPLICIT;
+
+CREATE CAST (text AS cipher)
+  WITH FUNCTION text_to_cipher(text) AS IMPLICIT;
