@@ -45,9 +45,21 @@ CREATE FUNCTION cipher_to_text(cipher) RETURNS text AS
 CREATE FUNCTION text_to_cipher(text) RETURNS cipher AS
   'SELECT cipherin(textout($1))' LANGUAGE sql IMMUTABLE STRICT;
 
--- IMPLICIT cast definition
+CREATE FUNCTION bpchar_to_cipher(bpchar) RETURNS cipher AS
+  'SELECT cipherin(bpcharout($1::text))' LANGUAGE sql IMMUTABLE STRICT;
+
+CREATE FUNCTION varchar_to_cipher(varchar) RETURNS cipher AS
+  'SELECT cipherin(varcharout($1))' LANGUAGE sql IMMUTABLE STRICT;
+
+-- Cast definition
 CREATE CAST (cipher AS text)
   WITH FUNCTION cipher_to_text(cipher) AS IMPLICIT;
 
 CREATE CAST (text AS cipher)
   WITH FUNCTION text_to_cipher(text) AS IMPLICIT;
+
+CREATE CAST (bpchar AS cipher)
+  WITH FUNCTION bpchar_to_cipher(bpchar) AS ASSIGNMENT;
+
+CREATE CAST (varchar AS cipher)
+  WITH FUNCTION varchar_to_cipher(varchar) AS ASSIGNMENT;

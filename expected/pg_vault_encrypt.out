@@ -22,6 +22,10 @@ INSERT INTO test values(3, 'I want to be an alien');
 INSERT 0 1
 INSERT INTO test values(4, 'I want to be a alien2'::text);
 INSERT 0 1
+INSERT INTO test values(5, 'I want to be a alien3'::varchar);
+INSERT 0 1
+INSERT INTO test values(6, 'I want to be a alien4'::char(32));
+INSERT 0 1
 SELECT * FROM test;
  id |         data          
 ----+-----------------------
@@ -29,7 +33,9 @@ SELECT * FROM test;
   2 | 宇宙人になりたい
   3 | I want to be an alien
   4 | I want to be a alien2
-(4 行)
+  5 | I want to be a alien3
+  6 | I want to be a alien4
+(6 行)
 
 SELECT * FROM test where data = '宇宙人になりたい';
  id |       data       
@@ -49,7 +55,7 @@ SELECT * FROM test where data LIKE '%になりたい';
   2 | 宇宙人になりたい
 (1 行)
 
-SELECT * FROM test where data LIKE '%宇宙人%';
+SELECT * FROM test where data LIKE '%宇宙人%'::varchar;
  id |       data       
 ----+------------------
   2 | 宇宙人になりたい
@@ -59,6 +65,12 @@ SELECT * FROM test where data LIKE '%宇宙まん%';
  id | data 
 ----+------
 (0 行)
+
+SELECT * FROM test where data = 'I want to be a alien4'::char(32);
+ id |         data          
+----+-----------------------
+  6 | I want to be a alien4
+(1 行)
 
 -- SET pg_vault_encrypt.vault_token = "not key";
 -- SELECT * FROM test;
