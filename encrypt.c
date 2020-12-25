@@ -86,27 +86,99 @@ void _PG_init(void)
 Datum
     encrypt(PG_FUNCTION_ARGS)
 {
+    char *enc_result = NULL;
+    size_t enc_result_len = 0;
+
     char *str = PG_GETARG_CSTRING(0);
-    PG_RETURN_CSTRING(VaultEncrypt(str, vault_addr, vault_token, vault_transit_engine_path, vault_transit_key_name, vault_tls_skip_verify));
+
+    /*** for debug info ****/
+    ereport(DEBUG1, errmsg("encrypt:text      : '%s'\n", str));
+    ereport(DEBUG1, errmsg("encrypt:text(addr): '%x'\n", str));
+    ereport(DEBUG1, errmsg("encrypt:text(len) : '%d'\n", strlen(str)));
+
+    ereport(DEBUG1, errmsg("encrypt:call VaultEncrypt\n"));
+
+    (void)VaultEncrypt(str, vault_addr, vault_token, vault_transit_engine_path, vault_transit_key_name, vault_tls_skip_verify, &enc_result);
+
+    ereport(DEBUG1, errmsg("encrypt:cipher_text      : '%s'\n", enc_result));
+    ereport(DEBUG1, errmsg("encrypt:cipher_text(addr): '%x'\n", enc_result));
+    enc_result_len = strlen(enc_result);
+    ereport(DEBUG1, errmsg("encrypt:cipher_text(len) : '%d'\n", enc_result_len));
+
+    PG_RETURN_CSTRING(enc_result);
 }
 
 Datum
     decrypt(PG_FUNCTION_ARGS)
 {
+    char *dec_result = NULL;
+    size_t dec_result_len = 0;
+
     char *str = PG_GETARG_CSTRING(0);
-    PG_RETURN_CSTRING(VaultDecrypt(str, vault_addr, vault_token, vault_transit_engine_path, vault_transit_key_name, vault_tls_skip_verify));
+
+    /*** for debug ****/
+    ereport(DEBUG1, errmsg("decrypt:cipher_text      : '%s'\n", str));
+    ereport(DEBUG1, errmsg("decrypt:cipher_text(addr): '%x'\n", str));
+    ereport(DEBUG1, errmsg("decrypt:cipher_text(len) : '%d'\n", strlen(str)));
+
+    ereport(DEBUG1, errmsg("decrypt:call VaultDecrypt\n"));
+
+    (void)VaultDecrypt(str, vault_addr, vault_token, vault_transit_engine_path, vault_transit_key_name, vault_tls_skip_verify, &dec_result);
+
+    ereport(DEBUG1, errmsg("decrypt:text      : '%s'\n", dec_result));
+    ereport(DEBUG1, errmsg("decrypt:text(addr): '%x'\n", dec_result));
+    dec_result_len = strlen(dec_result);
+    ereport(DEBUG1, errmsg("decrypt:text(len) : '%d'\n", dec_result_len));
+
+    PG_RETURN_CSTRING(dec_result);
 }
 
 Datum
     encryptin(PG_FUNCTION_ARGS)
 {
+    char *enc_result = NULL;
+    size_t enc_result_len = 0;
+
     char *str = PG_GETARG_CSTRING(0);
-    PG_RETURN_TEXT_P(cstring_to_text((char *)(intptr_t)VaultEncrypt(str, vault_addr, vault_token, vault_transit_engine_path, vault_transit_key_name, vault_tls_skip_verify)));
+
+    /*** for debug ****/
+    ereport(DEBUG1, errmsg("encryptin:text      : '%s'\n", str));
+    ereport(DEBUG1, errmsg("encryptin:text(addr): '%x'\n", str));
+    ereport(DEBUG1, errmsg("encryptin:text(len) : '%d'\n", strlen(str)));
+
+    ereport(DEBUG1, errmsg("encryptin:call VaultEncrypt\n"));
+
+    (void)VaultEncrypt(str, vault_addr, vault_token, vault_transit_engine_path, vault_transit_key_name, vault_tls_skip_verify, &enc_result);
+
+    ereport(DEBUG1, errmsg("encryptin:cipher_text      : '%s'\n", enc_result));
+    ereport(DEBUG1, errmsg("encryptin:cipher_text(addr): '%x'\n", enc_result));
+    enc_result_len = strlen(enc_result);
+    ereport(DEBUG1, errmsg("encryptin:cipher_text(len) : '%d'\n", enc_result_len));
+
+    PG_RETURN_TEXT_P(cstring_to_text(enc_result));
 }
 
 Datum
     decryptout(PG_FUNCTION_ARGS)
 {
+    char *dec_result = NULL;
+    size_t dec_result_len = 0;
+
     Datum txt = PG_GETARG_DATUM(0);
-    PG_RETURN_CSTRING(VaultDecrypt(TextDatumGetCString(txt), vault_addr, vault_token, vault_transit_engine_path, vault_transit_key_name, vault_tls_skip_verify));
+
+    /*** for debug ****/
+    ereport(DEBUG1, errmsg("decryptout:cipher_text      : '%s'\n", TextDatumGetCString(txt)));
+    ereport(DEBUG1, errmsg("decryptout:cipher_text(addr): '%x'\n", TextDatumGetCString(txt)));
+    ereport(DEBUG1, errmsg("decryptout:cipher_text(len) : '%d'\n", strlen(TextDatumGetCString(txt))));
+
+    ereport(DEBUG1, errmsg("decryptout:call VaultDecrypt\n"));
+
+    (void)VaultDecrypt(TextDatumGetCString(txt), vault_addr, vault_token, vault_transit_engine_path, vault_transit_key_name, vault_tls_skip_verify, &dec_result);
+
+    ereport(DEBUG1, errmsg("decryptout:text      : '%s'\n", dec_result));
+    ereport(DEBUG1, errmsg("decryptout:text(addr): '%x'\n", dec_result));
+    dec_result_len = strlen(dec_result);
+    ereport(DEBUG1, errmsg("decryptout:text(len) : '%d'\n", dec_result_len));
+
+    PG_RETURN_CSTRING(dec_result);
 }
