@@ -86,7 +86,7 @@ void _PG_init(void)
 Datum
     encrypt(PG_FUNCTION_ARGS)
 {
-    char *enc_result = NULL;
+    char *enc_result, *result = NULL;
     size_t enc_result_len = 0;
 
     char *str = PG_GETARG_CSTRING(0);
@@ -105,13 +105,16 @@ Datum
     enc_result_len = strlen(enc_result);
     ereport(DEBUG1, errmsg("encrypt:cipher_text(len) : '%d'\n", enc_result_len));
 
-    PG_RETURN_CSTRING(enc_result);
+    result = (char *)palloc(enc_result_len + 1);
+    strcpy(result, enc_result);
+    free(enc_result);
+    PG_RETURN_CSTRING(result);
 }
 
 Datum
     decrypt(PG_FUNCTION_ARGS)
 {
-    char *dec_result = NULL;
+    char *dec_result, *result = NULL;
     size_t dec_result_len = 0;
 
     char *str = PG_GETARG_CSTRING(0);
@@ -130,7 +133,10 @@ Datum
     dec_result_len = strlen(dec_result);
     ereport(DEBUG1, errmsg("decrypt:text(len) : '%d'\n", dec_result_len));
 
-    PG_RETURN_CSTRING(dec_result);
+    result = (char *)palloc(dec_result_len + 1);
+    strcpy(result, dec_result);
+    free(dec_result);
+    PG_RETURN_CSTRING(result);
 }
 
 Datum
@@ -154,14 +160,15 @@ Datum
     ereport(DEBUG1, errmsg("encryptin:cipher_text(addr): '%x'\n", enc_result));
     enc_result_len = strlen(enc_result);
     ereport(DEBUG1, errmsg("encryptin:cipher_text(len) : '%d'\n", enc_result_len));
-
-    PG_RETURN_TEXT_P(cstring_to_text(enc_result));
+    text *result = cstring_to_text(enc_result);
+    free(enc_result);
+    PG_RETURN_TEXT_P(result);
 }
 
 Datum
     decryptout(PG_FUNCTION_ARGS)
 {
-    char *dec_result = NULL;
+    char *dec_result, *result = NULL;
     size_t dec_result_len = 0;
 
     Datum txt = PG_GETARG_DATUM(0);
@@ -179,6 +186,8 @@ Datum
     ereport(DEBUG1, errmsg("decryptout:text(addr): '%x'\n", dec_result));
     dec_result_len = strlen(dec_result);
     ereport(DEBUG1, errmsg("decryptout:text(len) : '%d'\n", dec_result_len));
-
-    PG_RETURN_CSTRING(dec_result);
+    result = (char *)palloc(dec_result_len + 1);
+    strcpy(result, dec_result);
+    free(dec_result);
+    PG_RETURN_CSTRING(result);
 }
