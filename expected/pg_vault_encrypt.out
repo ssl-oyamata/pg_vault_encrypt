@@ -12,6 +12,8 @@ SELECT decrypt(encrypt('I want to be an alien'));
  I want to be an alien
 (1 行)
 
+DROP TABLE IF EXISTS test;
+DROP TABLE
 CREATE TABLE test(id int , data cipher);
 CREATE TABLE
 INSERT INTO test values(1, 'jp');
@@ -72,20 +74,158 @@ SELECT * FROM test where data = 'I want to be a alien4'::char(32);
   6 | I want to be a alien4
 (1 行)
 
--- SET pg_vault_encrypt.vault_token = "not key";
--- SELECT * FROM test;
--- SET pg_vault_encrypt.vault_token TO DEFAULT ;
---
--- SET pg_vault_encrypt.vault_addr = "http://192.168.0.40:8080";
--- SELECT * FROM test;
--- SET pg_vault_encrypt.vault_addr TO DEFAULT ;
---
--- SET pg_vault_encrypt.vault_transit_engine_path = "dummy";
--- SELECT * FROM test;
--- SET pg_vault_encrypt.vault_transit_engine_path TO DEFAULT ;
---
--- SET pg_vault_encrypt.vault_transit_key_name = "dummy";
--- SELECT * FROM test;
--- SET pg_vault_encrypt.vault_transit_key_name TO DEFAULT ;
+--　INSERT and UPDATE,DELETE (1,000 records)
+TRUNCATE test;
+TRUNCATE TABLE
+INSERT INTO test SELECT i, 'data' || i::text FROM generate_series(1, 1000) AS i;
+INSERT 0 1000
+SELECT * FROM test WHERE data = 'data999';
+ id  |  data   
+-----+---------
+ 999 | data999
+(1 行)
+
+UPDATE test SET data = 'updatedata999' WHERE data = 'data999';
+UPDATE 1
+SELECT * FROM test WHERE data = 'data999';
+ id | data 
+----+------
+(0 行)
+
+SELECT * FROM test WHERE data = 'updatedata999';
+ id  |     data      
+-----+---------------
+ 999 | updatedata999
+(1 行)
+
+DELETE FROM test WHERE data = 'updatedata999';
+DELETE 1
+SELECT * FROM test WHERE data = 'updatedata999';
+ id | data 
+----+------
+(0 行)
+
+-- INSERT 1MB,2MB,4MB,8MB,16MB,32MB data
+TRUNCATE test;
+TRUNCATE TABLE
+-- 1MB
+INSERT INTO test
+SELECT  1, string_agg(str, '') FROM
+  (SELECT i, md5(i::text) AS str FROM generate_series(1, 1024 * 1024 /32), generate_series(1, 1) AS i) AS t
+GROUP BY i;
+INSERT 0 1
+-- 2MB
+INSERT INTO test
+SELECT  2, string_agg(str, '') FROM
+  (SELECT i, md5(i::text) AS str FROM generate_series(1, 1024 * 1024 * 2 /32), generate_series(1, 1) AS i) AS t
+GROUP BY i;
+INSERT 0 1
+--- 4MB
+INSERT INTO test
+SELECT  4, string_agg(str, '') FROM
+  (SELECT i, md5(i::text) AS str FROM generate_series(1, 1024 * 1024 * 4 /32), generate_series(1, 1) AS i) AS t
+GROUP BY i;
+INSERT 0 1
+--- 8MB
+INSERT INTO test
+SELECT  8, string_agg(str, '') FROM
+  (SELECT i, md5(i::text) AS str FROM generate_series(1, 1024 * 1024 * 8 /32), generate_series(1, 1) AS i) AS t
+GROUP BY i;
+INSERT 0 1
+--- 16MB
+INSERT INTO test
+SELECT  16, string_agg(str, '') FROM
+  (SELECT i, md5(i::text) AS str FROM generate_series(1, 1024 * 1024 * 16 /32), generate_series(1, 1) AS i) AS t
+GROUP BY i;
+INSERT 0 1
+--- 32MB
+INSERT INTO test
+SELECT  32, string_agg(str, '') FROM
+  (SELECT i, md5(i::text) AS str FROM generate_series(1, 1024 * 1024 * 32 /32), generate_series(1, 1) AS i) AS t
+GROUP BY i;
+psql:sql/pg_vault_encrypt.sql:66: ERROR:  Cannot encrypt data : Error making API request.
+
+URL: PUT https://192.168.0.30:8200/v1/encryption/encrypt/pgtest
+Code: 413. Errors:
+
+* failed to parse JSON input: http: request body too large
+CONTEXT:  SQL function "text_to_cipher" statement 1
+SELECT octet_length(data) FROM test;
+ octet_length 
+--------------
+      1048576
+      2097152
+      4194304
+      8388608
+     16777216
+(5 行)
+
+-- Configuration error
+SET pg_vault_encrypt.vault_token = "not key";
+SET
+INSERT INTO test values(99, 'test');
+psql:sql/pg_vault_encrypt.sql:71: ERROR:  Cannot encrypt data : Error making API request.
+
+URL: PUT https://192.168.0.30:8200/v1/encryption/encrypt/pgtest
+Code: 403. Errors:
+
+* permission denied
+行 1: INSERT INTO test values(99, 'test');
+                                  ^
+SELECT * FROM test;
+psql:sql/pg_vault_encrypt.sql:72: ERROR:  Cannot decrypt data : Error making API request.
+
+URL: PUT https://192.168.0.30:8200/v1/encryption/decrypt/pgtest
+Code: 403. Errors:
+
+* permission denied
+SET pg_vault_encrypt.vault_token TO DEFAULT ;
+SET
+SET pg_vault_encrypt.vault_addr = "http://192.168.0.40:8080";
+SET
+INSERT INTO test values(99, 'test');
+psql:sql/pg_vault_encrypt.sql:76: ERROR:  Cannot encrypt data : Put "http://192.168.0.40:8080/v1/encryption/encrypt/pgtest": dial tcp 192.168.0.40:8080: connect: no route to host
+行 1: INSERT INTO test values(99, 'test');
+                                  ^
+SELECT * FROM test;
+psql:sql/pg_vault_encrypt.sql:77: ERROR:  Cannot decrypt data : Put "http://192.168.0.40:8080/v1/encryption/decrypt/pgtest": dial tcp 192.168.0.40:8080: connect: no route to host
+SET pg_vault_encrypt.vault_addr TO DEFAULT ;
+SET
+SET pg_vault_encrypt.vault_transit_engine_path = "dummy";
+SET
+INSERT INTO test values(99, 'test');
+psql:sql/pg_vault_encrypt.sql:81: ERROR:  Cannot encrypt data : Error making API request.
+
+URL: PUT https://192.168.0.30:8200/v1/dummy/encrypt/pgtest
+Code: 404. Errors:
+
+* no handler for route 'dummy/encrypt/pgtest'
+行 1: INSERT INTO test values(99, 'test');
+                                  ^
+SELECT * FROM test;
+psql:sql/pg_vault_encrypt.sql:82: ERROR:  Cannot decrypt data : Error making API request.
+
+URL: PUT https://192.168.0.30:8200/v1/dummy/decrypt/pgtest
+Code: 404. Errors:
+
+* no handler for route 'dummy/decrypt/pgtest'
+SET pg_vault_encrypt.vault_transit_engine_path TO DEFAULT ;
+SET
+SET pg_vault_encrypt.vault_transit_key_name = "dummy";
+SET
+INSERT INTO test values(99, 'test');
+INSERT 0 1
+SELECT * FROM test;
+psql:sql/pg_vault_encrypt.sql:87: ERROR:  Cannot decrypt data : Error making API request.
+
+URL: PUT https://192.168.0.30:8200/v1/encryption/decrypt/dummy
+Code: 500. Errors:
+
+* 1 error occurred:
+	* cipher: message authentication failed
+
+
+SET pg_vault_encrypt.vault_transit_key_name TO DEFAULT ;
+SET
 DROP TABLE test;
 DROP TABLE
