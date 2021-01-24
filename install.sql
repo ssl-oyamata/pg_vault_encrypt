@@ -63,3 +63,83 @@ CREATE CAST (bpchar AS cipher)
 
 CREATE CAST (varchar AS cipher)
   WITH FUNCTION varchar_to_cipher(varchar) AS ASSIGNMENT;
+
+--- Comparison operators
+CREATE or REPLACE FUNCTION cipher_eq(cipher, cipher) RETURNS bool AS
+'SELECT textin(cipherout($1)) = textin(cipherout($2))' LANGUAGE sql IMMUTABLE STRICT;
+
+CREATE OPERATOR = (
+    leftarg = cipher,
+    rightarg = cipher,
+    procedure = cipher_eq,
+    commutator = =,
+    RESTRICT = eqsel
+);
+
+CREATE or REPLACE FUNCTION cipher_ne(cipher, cipher) RETURNS bool AS
+'SELECT textin(cipherout($1)) != textin(cipherout($2))' LANGUAGE sql IMMUTABLE STRICT;
+
+CREATE OPERATOR <> (
+    leftarg = cipher,
+    rightarg = cipher,
+    procedure = cipher_ne,
+    RESTRICT = neqsel
+);
+
+CREATE or REPLACE FUNCTION cipher_lt(cipher, cipher) RETURNS bool AS
+'SELECT textin(cipherout($1)) < textin(cipherout($2))' LANGUAGE sql IMMUTABLE STRICT;
+
+CREATE OPERATOR < (
+    leftarg = cipher,
+    rightarg = cipher,
+    procedure = cipher_lt,
+    RESTRICT = scalarltsel
+);
+
+CREATE or REPLACE FUNCTION cipher_gt(cipher, cipher) RETURNS bool AS
+'SELECT textin(cipherout($1)) > textin(cipherout($2))' LANGUAGE sql IMMUTABLE STRICT;
+
+CREATE OPERATOR > (
+    leftarg = cipher,
+    rightarg = cipher,
+    procedure = cipher_gt,
+    RESTRICT = scalargtsel
+);
+
+CREATE or REPLACE FUNCTION cipher_le(cipher, cipher) RETURNS bool AS
+'SELECT textin(cipherout($1)) <= textin(cipherout($2))' LANGUAGE sql IMMUTABLE STRICT;
+
+CREATE OPERATOR <= (
+    leftarg = cipher,
+    rightarg = cipher,
+    procedure = cipher_le,
+    RESTRICT = scalargtsel
+);
+
+CREATE or REPLACE FUNCTION cipher_ge(cipher, cipher) RETURNS bool AS
+'SELECT textin(cipherout($1)) >= textin(cipherout($2))' LANGUAGE sql IMMUTABLE STRICT;
+
+CREATE OPERATOR >= (
+    leftarg = cipher,
+    rightarg = cipher,
+    procedure = cipher_ge,
+    RESTRICT = scalargtsel
+);
+
+CREATE or REPLACE FUNCTION cipher_cmp(cipher, cipher)
+returns integer language sql immutable as $$
+    select case
+        when textin(cipherout($1)) = textin(cipherout($2)) then 0
+        when textin(cipherout($1)) < textin(cipherout($2)) then -1
+        else 1
+    end
+$$;
+
+CREATE OPERATOR CLASS cipher_ops
+    DEFAULT FOR TYPE cipher USING btree AS
+        OPERATOR 1 <,
+        OPERATOR 2 <=,
+        OPERATOR 3 =,
+        OPERATOR 4 >=,
+        OPERATOR 5 >,
+        FUNCTION 1 cipher_cmp(cipher, cipher);
